@@ -27,6 +27,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  const handleLogout = () => {
+    localStorage.removeItem('jwt_token');
+    localStorage.removeItem('user');
+    router.push('/login'); // Redirect to login
+  };
+
   return (
     <div className="flex h-screen bg-slate-50">
       {/* --- SIDEBAR (Updated to White) --- */}
@@ -82,7 +88,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <div className="absolute right-0 mt-2 w-48 bg-white border border-slate-200 rounded-xl shadow-xl py-2 z-50">
                 <button onClick={() => router.push('/profile')} className="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-50">View Profile</button>
                 <div className="h-px bg-slate-100 my-1"></div>
-                <button onClick={() => router.push('/login')} className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 font-medium">Logout</button>
+                <button onClick={handleLogout} className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 font-medium">Logout</button>
               </div>
             )}
           </div>
