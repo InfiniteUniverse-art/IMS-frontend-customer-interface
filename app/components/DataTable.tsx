@@ -37,7 +37,7 @@ export default function DataTable<T extends object>({
     pageSize: initialPageSize,
   });
 
-  // Fetch Data
+  
   useEffect(() => {
     let mounted = true;
     setLoading(true);
@@ -70,7 +70,7 @@ export default function DataTable<T extends object>({
       pagination: { pageIndex, pageSize },
     },
     onGlobalFilterChange: setGlobalFilter,
-    // FIX: Correctly handle the functional updater from TanStack Table
+
     onPaginationChange: (updater: Updater<PaginationState>) => {
       setPagination((old) => {
         const next = typeof updater === "function" ? updater(old) : updater;
@@ -84,7 +84,7 @@ export default function DataTable<T extends object>({
 
   return (
     <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
-      {/* Header Area */}
+
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-xl font-bold text-gray-800">{title || "Directory"}</h2>
         <input
@@ -95,7 +95,7 @@ export default function DataTable<T extends object>({
         />
       </div>
 
-      {/* Table Area */}
+   
       <div className="overflow-x-auto rounded-md border border-gray-200">
         <table className="min-w-full text-sm divide-y divide-gray-200">
           <thead className="bg-gray-50 text-gray-600 text-xs uppercase font-semibold">

@@ -1,4 +1,3 @@
-// src/app/(dashboard)/layout.tsx
 "use client";
 
 import React, { useState, useEffect, useRef } from 'react';
@@ -9,7 +8,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
-  const pathname = usePathname(); // To identify the active link
+  const pathname = usePathname(); 
 
   const menuItems = [
     { name: 'Customers', href: '/customers', icon: '👥' },
@@ -30,12 +29,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const handleLogout = () => {
     localStorage.removeItem('jwt_token');
     localStorage.removeItem('user');
-    router.push('/login'); // Redirect to login
+    router.push('/login'); 
   };
 
   return (
     <div className="flex h-screen bg-slate-50">
-      {/* --- SIDEBAR (Updated to White) --- */}
+    
       <aside className="w-64 bg-white border-r border-slate-200 flex flex-col">
         <div className="h-16 flex items-center px-6 border-b border-slate-100">
           <span className="text-blue-600 font-black text-xl tracking-tight">IMS<span className="text-slate-900"> Portal</span></span>
@@ -62,9 +61,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </nav>
       </aside>
 
-      {/* --- MAIN CONTENT AREA --- */}
+     
       <div className="flex-1 flex flex-col overflow-hidden">
-        {/* HEADER */}
+     
         <header className="h-16 border-b border-slate-200 bg-white flex items-center justify-end px-8 relative z-20">
           <div className="relative" ref={dropdownRef}>
             <button 
@@ -83,10 +82,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               </svg>
             </button>
 
-            {/* DROPDOWN */}
+        
             {isDropdownOpen && (
               <div className="absolute right-0 mt-2 w-48 bg-white border border-slate-200 rounded-xl shadow-xl py-2 z-50">
-                <button onClick={() => router.push('/profile')} className="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-50">View Profile</button>
+                <button onClick={() => router.push('/profile')} className="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-50" disabled>View Profile</button>
                 <div className="h-px bg-slate-100 my-1"></div>
                 <button onClick={handleLogout} className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 font-medium">Logout</button>
               </div>
@@ -94,7 +93,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </div>
         </header>
 
-        {/* PAGE CONTENT */}
+      
         <main className="flex-1 overflow-y-auto p-8">
           {children}
         </main>

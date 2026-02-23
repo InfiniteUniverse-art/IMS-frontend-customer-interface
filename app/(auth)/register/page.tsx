@@ -2,11 +2,12 @@
 
 import React, { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { REGISTER_TEXT, validatePasswords, prepareRegisterFormData } from "../../utils/register-validation";
 
 export default function RegisterPage() {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  
+
   // State
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -25,7 +26,7 @@ export default function RegisterPage() {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0] ?? null;
     setImageFile(f);
-    setError(null); // Clear errors when user interacts
+    setError(null);
   };
 
   const handleDrop = (e: React.DragEvent) => {
@@ -40,21 +41,15 @@ export default function RegisterPage() {
     setError(null);
     setSuccess(null);
 
-    if (password !== confirmPassword) {
-      setError("Passwords do not match. Please double-check.");
+    const validationError = validatePasswords(password, confirmPassword);
+    if (validationError) {
+      setError(validationError);
       return;
     }
 
-    const formData = new FormData();
-    formData.append("first_name", firstName); 
-    formData.append("last_name", lastName);
-    formData.append("email", email);
-    formData.append("phone", phone);
-    formData.append("password", password);
-    formData.append("role", "customer");
-    if (age) formData.append("age", age);
-    if (gender) formData.append("gender", gender);
-    if (imageFile) formData.append("image", imageFile); 
+    const formData = prepareRegisterFormData({
+      firstName, lastName, email, phone, password, age, gender, imageFile
+    });
 
     try {
       setLoading(true);
@@ -65,147 +60,127 @@ export default function RegisterPage() {
 
       const data = await res.json();
       if (!res.ok) {
-        const errorMessage = data.errors ? data.errors.join(", ") : (data.error || "Registration failed");
+        const errorMessage = data.errors ? data.errors.join(", ") : (data.error || REGISTER_TEXT.ERROR_GENERIC);
         setError(errorMessage);
       } else {
-        setSuccess("Account created successfully! Redirecting...");
+        setSuccess(REGISTER_TEXT.SUCCESS_REDIRECT);
         setTimeout(() => router.push("/policies"), 1500);
       }
     } catch (err: any) {
-      setError("Connection lost. Please check your internet.");
+      setError(REGISTER_TEXT.ERROR_CONNECTION);
     } finally {
       setLoading(false);
     }
   };
 
-  // Reusable Styles
-  const labelStyle = { display: "block", fontSize: "12px", fontWeight: "600", color: "#4b5563", marginBottom: "4px" };
-  const inputStyle = { width: "100%", padding: "10px 12px", borderRadius: "8px", border: "1px solid #e5e7eb", fontSize: "14px", outline: "none", transition: "border-color 0.2s" };
+  // Tailwind Constants for reusability
+  const labelClass = "block text-[12px] font-semibold text-gray-600 mb-1";
+  const inputClass = "w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm outline-none transition-colors focus:border-blue-500";
 
   return (
-    <div style={{ height: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#f3f4f6", overflow: "hidden" }}>
-      <div style={{ width: 900, height: 640, boxShadow: "0 25px 50px -12px rgba(0,0,0,0.15)", borderRadius: 20, background: "#fff", display: "flex", overflow: "hidden" }}>
+    <div className="h-screen flex items-center justify-center bg-gray-100 overflow-hidden">
+      <div className="flex w-[900px] h-[640px] bg-white rounded-[20px] shadow-2xl overflow-hidden">
         
         {/* Left Side Branding */}
-        {/* <div style={{ flex: 1, padding: 48, background: "#1e3a8a", color: "white", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
-          <div>
-            <div style={{ width: 48, height: 48, background: "rgba(255,255,255,0.1)", borderRadius: 12, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 32 }}>
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-            </div>
-            <h1 style={{ fontSize: 32, fontWeight: "800", marginBottom: 16, letterSpacing: "-0.025em" }}>Join IMS </h1>
-            <p style={{ fontSize: 16, lineHeight: "1.6", opacity: 0.8 }}>Experience the next generation of asset management with military-grade security protocols.</p>
+        <div className="flex-1 p-10 bg-gradient-to-br from-[#1e40af] to-[#3b82f6] text-white flex flex-col justify-center">
+          <div className="w-[60px] h-[60px] bg-white/20 rounded-xl flex items-center justify-center mb-6">
+             <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+               <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+             </svg>
           </div>
-          <div style={{ fontSize: 13, opacity: 0.6 }}>© 2026 Insurance management System Global</div>
-        </div> */}
-        <div style={{ flex: 1, padding: 40, background: "linear-gradient(135deg, #1e40af 0%, #3b82f6 100%)", color: "white", display: "flex", flexDirection: "column", justifyContent: "center" }}>
-          <div style={{ width: 60, height: 60, background: "rgba(255,255,255,0.2)", borderRadius: 12, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 24 }}>
-             <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-          </div>
-          <h1 style={{ fontSize: 28, fontWeight: "bold", marginBottom: 16 }}>IMS - Insurance Management System</h1>
-          <p style={{ fontSize: 16, lineHeight: "1.5", opacity: 0.9 }}>Secure your future with our enterprise-grade identity management system. Simple, fast, and encrypted.</p>
+          <h1 className="text-[28px] font-bold mb-4 leading-tight">{REGISTER_TEXT.BRAND_TITLE}</h1>
+          <p className="text-base leading-relaxed opacity-90">{REGISTER_TEXT.BRAND_SUBTITLE}</p>
         </div>
 
         {/* Right Side Form */}
-        <div style={{ width: 520, padding: "40px 48px", display: "flex", flexDirection: "column" }}>
-          <header style={{ marginBottom: 24 }}>
-            <h2 style={{ fontSize: 24, fontWeight: "700", color: "#111827" }}>Create Account</h2>
-            <p style={{ color: "#6b7280", fontSize: 14 }}>Get started in less than 2 minutes.</p>
+        <div className="w-[520px] p-[40px_48px] flex flex-col">
+          <header className="mb-6">
+            <h2 className="text-2xl font-bold text-gray-900">{REGISTER_TEXT.FORM_TITLE}</h2>
+            <p className="text-gray-500 text-sm">{REGISTER_TEXT.FORM_SUBTITLE}</p>
           </header>
 
-          <form onSubmit={handleSubmit} style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px" }}>
-            <div style={{ gridColumn: "span 1" }}>
-              <label style={labelStyle}>First Name</label>
-              <input required placeholder="John" value={firstName} onChange={(e) => setFirstName(e.target.value)} style={inputStyle} />
+          <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-[14px]">
+            <div className="col-span-1">
+              <label className={labelClass}>First Name</label>
+              <input required placeholder="John" value={firstName} onChange={(e) => setFirstName(e.target.value)} className={inputClass} />
             </div>
-            <div style={{ gridColumn: "span 1" }}>
-              <label style={labelStyle}>Last Name</label>
-              <input required placeholder="Doe" value={lastName} onChange={(e) => setLastName(e.target.value)} style={inputStyle} />
+            <div className="col-span-1">
+              <label className={labelClass}>Last Name</label>
+              <input required placeholder="Doe" value={lastName} onChange={(e) => setLastName(e.target.value)} className={inputClass} />
             </div>
-            <div style={{ gridColumn: "span 2" }}>
-              <label style={labelStyle}>Email Address</label>
-              <input required type="email" placeholder="john@example.com" value={email} onChange={(e) => setEmail(e.target.value)} style={inputStyle} />
+            <div className="col-span-2">
+              <label className={labelClass}>Email Address</label>
+              <input required type="email" placeholder="john@example.com" value={email} onChange={(e) => setEmail(e.target.value)} className={inputClass} />
             </div>
-            <div style={{ gridColumn: "span 1" }}>
-              <label style={labelStyle}>Phone Number</label>
-              <input required placeholder="+1..." value={phone} onChange={(e) => setPhone(e.target.value)} style={inputStyle} />
+            <div className="col-span-1">
+              <label className={labelClass}>Phone Number</label>
+              <input required placeholder="+1..." value={phone} onChange={(e) => setPhone(e.target.value)} className={inputClass} />
             </div>
-            <div style={{ gridColumn: "span 1" }}>
-              <label style={labelStyle}>Age & Gender</label>
-              <div style={{ display: "flex", gap: 8 }}>
-                <input placeholder="Age" value={age} onChange={(e) => setAge(e.target.value)} style={{ ...inputStyle, flex: 1 }} />
-                <select value={gender} onChange={(e) => setGender(e.target.value)} style={{ ...inputStyle, flex: 1.5 }}>
+            <div className="col-span-1">
+              <label className={labelClass}>Age & Gender</label>
+              <div className="flex gap-2">
+                <input placeholder="Age" value={age} onChange={(e) => setAge(e.target.value)} className={`${inputClass} flex-1`} />
+                <select value={gender} onChange={(e) => setGender(e.target.value)} className={`${inputClass} flex-[1.5]`}>
                   <option value="">Gender</option>
                   <option value="Male">Male</option>
                   <option value="Female">Female</option>
                 </select>
               </div>
             </div>
-            <div style={{ gridColumn: "span 1" }}>
-              <label style={labelStyle}>Password</label>
-              <input required type="password" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} style={inputStyle} />
+            <div className="col-span-1">
+              <label className={labelClass}>Password</label>
+              <input required type="password" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} className={inputClass} />
             </div>
-            <div style={{ gridColumn: "span 1" }}>
-              <label style={labelStyle}>Confirm Password</label>
-              <input required type="password" placeholder="••••••••" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} style={inputStyle} />
+            <div className="col-span-1">
+              <label className={labelClass}>Confirm Password</label>
+              <input required type="password" placeholder="••••••••" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} className={inputClass} />
             </div>
 
-            <div style={{ gridColumn: "span 2" }}>
-              <label style={labelStyle}>Profile Photo</label>
+            <div className="col-span-2">
+              <label className={labelClass}>Profile Photo</label>
               <div 
                 onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
                 onDragLeave={() => setIsDragging(false)}
                 onDrop={handleDrop}
                 onClick={() => fileInputRef.current?.click()}
-                style={{
-                  border: `2px dashed ${isDragging ? "#2563eb" : "#e5e7eb"}`,
-                  borderRadius: "10px",
-                  padding: "10px",
-                  textAlign: "center",
-                  cursor: "pointer",
-                  background: isDragging ? "#eff6ff" : "#f9fafb",
-                  transition: "all 0.2s ease"
-                }}
+                className={`border-2 border-dashed rounded-xl p-2.5 text-center cursor-pointer transition-all duration-200 
+                  ${isDragging ? "border-blue-600 bg-blue-50" : "border-gray-200 bg-gray-50"}`}
               >
                 <input type="file" ref={fileInputRef} hidden accept="image/*" onChange={handleFileChange} />
-                <span style={{ fontSize: "13px", color: imageFile ? "#1e40af" : "#6b7280", fontWeight: imageFile ? "600" : "400" }}>
+                <span className={`text-[13px] ${imageFile ? "text-blue-800 font-semibold" : "text-gray-500 font-normal"}`}>
                   {imageFile ? `✓ ${imageFile.name}` : "Drop image here or click to browse"}
                 </span>
               </div>
             </div>
 
             {/* MESSAGE AREA */}
-            <div style={{ gridColumn: "span 2", minHeight: "44px" }}>
+            <div className="col-span-2 min-h-[44px]">
               {error && (
-                <div style={{ background: "#fef2f2", color: "#991b1b", padding: "10px 14px", borderRadius: "8px", fontSize: "13px", display: "flex", alignItems: "center", gap: "8px", border: "1px solid #fee2e2" }}>
+                <div className="bg-red-50 text-red-800 p-[10px_14px] rounded-lg text-[13px] flex items-center gap-2 border border-red-100">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
                   {error}
                 </div>
               )}
               {success && (
-                <div style={{ background: "#f0fdf4", color: "#166534", padding: "10px 14px", borderRadius: "8px", fontSize: "13px", display: "flex", alignItems: "center", gap: "8px", border: "1px solid #dcfce7" }}>
+                <div className="bg-green-50 text-green-800 p-[10px_14px] rounded-lg text-[13px] flex items-center gap-2 border border-green-100">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg>
                   {success}
                 </div>
               )}
             </div>
 
-            <button type="submit" disabled={loading} style={{ 
-              gridColumn: "span 2", 
-              padding: "14px", 
-              background: loading ? "#94a3b8" : "#2563eb", 
-              color: "white", 
-              borderRadius: "10px", 
-              border: "none", 
-              fontWeight: "700",
-              cursor: loading ? "not-allowed" : "pointer",
-              boxShadow: "0 4px 6px -1px rgba(37, 99, 235, 0.2)"
-            }}>
+            <button 
+              type="submit" 
+              disabled={loading} 
+              className={`col-span-2 p-3.5 rounded-xl border-none font-bold text-white transition-all shadow-blue-600/20 shadow-lg
+                ${loading ? "bg-slate-400 cursor-not-allowed" : "bg-blue-600 cursor-pointer hover:bg-blue-700 active:transform active:scale-[0.98]"}`}
+            >
               {loading ? "Creating your secure account..." : "Register Now"}
             </button>
           </form>
 
-          <p style={{ textAlign: "center", marginTop: "auto", fontSize: "14px", color: "#6b7280" }}>
-            Already a member? <a href="/auth/login" style={{ color: "#2563eb", fontWeight: "600", textDecoration: "none" }}>Log In</a>
+          <p className="text-center mt-auto text-sm text-gray-500">
+            {REGISTER_TEXT.LOGIN_PROMPT} <a href="/auth/login" className="text-blue-600 font-semibold no-underline hover:underline">{REGISTER_TEXT.LOGIN_LINK}</a>
           </p>
         </div>
       </div>
