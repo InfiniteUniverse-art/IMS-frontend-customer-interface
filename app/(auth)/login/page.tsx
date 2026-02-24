@@ -12,7 +12,7 @@ export default function LoginPage() {
   const router = useRouter();
   const { login } = useAuth();
 
-  const handleLogin = async (e: React.FormEvent) => {
+const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError('');
@@ -22,19 +22,19 @@ export default function LoginPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
+        // CRITICAL: This allows the browser to receive and save the HttpOnly cookie
+        credentials: 'include', 
       });
 
       const data = await response.json();
 
-      if (response.ok && data.token) {
-        // Update context state immediately
-        login(data.user, data.token);
+      if (response.ok) {
+        login(data.user);
         
-        // Redirect based on role
         const target = data.user.role === 'admin' ? '/customers' : '/policies';
         router.push(target);
       } else {
-        setError(data.message || 'Invalid email or password');
+        setError(data.error || 'Invalid email or password');
       }
     } catch (err) {
       setError('Unable to connect to the login server.');
@@ -42,7 +42,7 @@ export default function LoginPage() {
       setIsLoading(false);
     }
   };
-
+  
   return (
     <main className="flex min-h-screen items-center justify-center bg-slate-100 font-[family-name:var(--font-geist-sans)]">
       <div className="w-full max-w-md bg-white p-8 rounded-2xl shadow-2xl border border-slate-200">

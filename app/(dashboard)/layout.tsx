@@ -25,7 +25,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     { name: 'Claims', href: '/claims', icon: '📋', adminOnly: false },
   ].filter(item => {
     // If it's an admin-only item, only show if user is admin
-    if (item.adminOnly) return user?.role === 'admin';
+    if (item.adminOnly) return user?.role === 'admin' || 'Admin';
     return true;
   });
 

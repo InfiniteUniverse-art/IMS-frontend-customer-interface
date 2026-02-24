@@ -13,8 +13,8 @@ interface User {
 
 interface AuthContextType {
   user: User | null;
-  login: (userData: User, token: string) => void;
-  logout: () => void;
+  login: (userData: User) => void; 
+  logout: () => Promise<void>;   
   isLoading: boolean;
 }
 
@@ -25,6 +25,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    // We still store the user PROFILE in localStorage for UI purposes (name, image)
     const storedUser = localStorage.getItem('user');
     if (storedUser) {
       setUser(JSON.parse(storedUser));
@@ -32,17 +33,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setIsLoading(false);
   }, []);
 
-  const login = (userData: User, token: string) => {
-    localStorage.setItem('jwt_token', token);
+  const login = (userData: User) => {
     localStorage.setItem('user', JSON.stringify(userData));
-    // Updating state here triggers an immediate re-render of all consuming components
     setUser(userData);
   };
 
-  const logout = () => {
-    localStorage.removeItem('jwt_token');
-    localStorage.removeItem('user');
-    setUser(null);
+  const logout = async () => {
+    try {
+      // 1. Tell the backend to clear the HttpOnly cookie
+      await fetch('http://localhost:3000/api/v1/customers/logout', { 
+        method: 'POST',
+        credentials: 'include' // Crucial: tells browser to send the cookie to be cleared
+      });
+    } catch (error) {
+      console.error("Logout failed to notify server", error);
+    } finally {
+      localStorage.removeItem('user');
+      setUser(null);
+    }
   };
 
   return (
